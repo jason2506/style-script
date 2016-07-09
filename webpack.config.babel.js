@@ -31,4 +31,8 @@ export default {
       },
     ],
   },
+
+  externals: {
+    lodash: '_',
+  },
 }

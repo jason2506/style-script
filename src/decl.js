@@ -23,11 +23,14 @@ const proto = Object.freeze({
 
     const {mixins, props, children} = this
     if (context) {
-      if (hasOwnProperty.call(rules, context)) {
-        throw new Error(`Rule alread defined: "${ context }"`)
+      if (props) {
+        if (hasOwnProperty.call(rules, context)) {
+          throw new Error(`Rule alread defined: "${ context }"`)
+        }
+
+        rules[context] = props
       }
 
-      rules[context] = props
       mixins.forEach(mixin => {
         if (proto.isPrototypeOf(mixin)) {
           mixin._export(context, lists)
@@ -35,7 +38,7 @@ const proto = Object.freeze({
           lists.push({[context]: mixin})
         }
       })
-    } else if (Object.keys(props).length) {
+    } else if (props && Object.keys(props).length) {
       throw new Error('Decl with props can not be exported without context')
     } else if (mixins.length) {
       throw new Error('Decl with mixins can not be exported without context')
@@ -52,7 +55,7 @@ const proto = Object.freeze({
       }
     })
 
-    if (appended) {
+    if (appended && Object.keys(rules).length) {
       lists.push(rules)
     }
 
@@ -72,7 +75,7 @@ const proto = Object.freeze({
   },
 })
 
-export default (props = {}) =>
+export default props =>
   Object.create(proto, {
     mixins: {
       writable: false,

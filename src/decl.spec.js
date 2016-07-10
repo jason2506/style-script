@@ -5,6 +5,12 @@ import Decl from './decl'
 
 describe('Decl', () => {
   describe('#_export()', () => {
+    it('should not export Decl without props', () => {
+      const decl = Decl()
+      const lists = decl._export(null, [])
+      expect(lists).to.eql([])
+    })
+
     it('should throw error when non-empty Decl is exported without context', () => {
       const decl = Decl({
         fontSize: 16,
@@ -81,14 +87,14 @@ describe('Decl', () => {
     })
 
     it('should detect conflicted rule declared with plain-object', () => {
-      const decl = Decl().nest(_ => '.foo', {})
+      const decl = Decl({}).nest(_ => '.foo', {})
       const context = Context('.foo', null)
       const f = () => decl._export(context, [])
       expect(f).to.throw(Error, /^Rule alread defined: ".foo"$/)
     })
 
     it('should detect conflicted rule declared with Decl()', () => {
-      const decl = Decl().nest(_ => '.foo', Decl())
+      const decl = Decl({}).nest(_ => '.foo', Decl({}))
       const context = Context('.foo', null)
       const f = () => decl._export(context, [])
       expect(f).to.throw(Error, /^Rule alread defined: ".foo"$/)
@@ -220,8 +226,6 @@ describe('Decl', () => {
         },
 
         { // decl
-          '.foo': {},
-
           '.foo .nested': {
             fontSize: 16,
           },

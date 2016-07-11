@@ -1,7 +1,7 @@
 import _ from 'lodash'
 
-import Context from './context'
 import merge from './merge'
+import resolve from './resolve'
 
 const hasOwnProperty = Object.prototype.hasOwnProperty
 const proto = Object.freeze({
@@ -10,8 +10,8 @@ const proto = Object.freeze({
     return this
   },
 
-  nest(selector, decl) {
-    this.children.push({selector, decl})
+  nest(selectors, decl) {
+    this.children.push({selectors, decl})
     return this
   },
 
@@ -23,19 +23,20 @@ const proto = Object.freeze({
 
     const {mixins, props, children} = this
     if (context) {
+      const selector = context.join(',')
       if (props) {
-        if (hasOwnProperty.call(rules, context)) {
-          throw new Error(`Rule alread defined: "${ context }"`)
+        if (hasOwnProperty.call(rules, selector)) {
+          throw new Error(`Rule alread defined: "${ selector }"`)
         }
 
-        rules[context] = props
+        rules[selector] = props
       }
 
       mixins.forEach(mixin => {
         if (proto.isPrototypeOf(mixin)) {
           mixin._export(context, lists)
         } else {
-          lists.push({[context]: mixin})
+          lists.push({[selector]: mixin})
         }
       })
     } else if (props && Object.keys(props).length) {
@@ -44,14 +45,17 @@ const proto = Object.freeze({
       throw new Error('Decl with mixins can not be exported without context')
     }
 
-    children.forEach(({selector, decl}) => {
-      const nestedContext = Context(selector, context)
+    children.forEach(({selectors, decl}) => {
+      const nestedContext = resolve(selectors, context)
       if (proto.isPrototypeOf(decl)) {
         decl._export(nestedContext, lists, rules)
-      } else if (!hasOwnProperty.call(rules, nestedContext)) {
-        rules[nestedContext] = decl
       } else {
-        throw new Error(`Rule alread defined: "${ nestedContext }"`)
+        const selector = nestedContext.join(',')
+        if (!hasOwnProperty.call(rules, selector)) {
+          rules[selector] = decl
+        } else {
+          throw new Error(`Rule alread defined: "${ nestedContext }"`)
+        }
       }
     })
 

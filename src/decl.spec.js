@@ -1,6 +1,5 @@
 import {expect} from 'chai'
 
-import Context from './context'
 import Decl from './decl'
 
 describe('Decl', () => {
@@ -27,8 +26,7 @@ describe('Decl', () => {
         lineHeight: 1.5,
       })
 
-      const context = Context('html', null)
-      const lists = decl._export(context, [])
+      const lists = decl._export(['html'], [])
       expect(lists).to.eql([
         {
           html: {
@@ -39,14 +37,12 @@ describe('Decl', () => {
       ])
     })
 
-    it('should handle Decl with nested context', () => {
+    it('should handle Decl with multiple selectors', () => {
       const decl = Decl({
         boxSizing: 'border-box',
       })
 
-      const parent = Context('*', null)
-      const context = Context(_ => [_, `${ _ }:before`, `${ _ }:after`], parent)
-      const lists = decl._export(context, [])
+      const lists = decl._export(['*', '*:before', '*:after'], [])
       expect(lists).to.eql([
         {
           '*,*:before,*:after': {
@@ -67,8 +63,7 @@ describe('Decl', () => {
           color: '#999',
         })
 
-      const context = Context('.foo', null)
-      const lists = decl._export(context, [])
+      const lists = decl._export(['.foo'], [])
       expect(lists).to.eql([
         {
           '.foo': {
@@ -88,15 +83,13 @@ describe('Decl', () => {
 
     it('should detect conflicted rule declared with plain-object', () => {
       const decl = Decl({}).nest(_ => '.foo', {})
-      const context = Context('.foo', null)
-      const f = () => decl._export(context, [])
+      const f = () => decl._export(['.foo'], [])
       expect(f).to.throw(Error, /^Rule alread defined: ".foo"$/)
     })
 
     it('should detect conflicted rule declared with Decl()', () => {
       const decl = Decl({}).nest(_ => '.foo', Decl({}))
-      const context = Context('.foo', null)
-      const f = () => decl._export(context, [])
+      const f = () => decl._export(['.foo'], [])
       expect(f).to.throw(Error, /^Rule alread defined: ".foo"$/)
     })
 
@@ -109,9 +102,7 @@ describe('Decl', () => {
     it('should export mixin defined with plain-object', () => {
       const size = (width, height) => ({width, height})
       const decl = Decl({display: 'block'}).mixin(size(250, 300))
-
-      const context = Context('.box', null)
-      const lists = decl._export(context, [])
+      const lists = decl._export(['.box'], [])
       expect(lists).to.eql([
         { // mixin in decl
           '.box': {
@@ -131,9 +122,7 @@ describe('Decl', () => {
     it('should export mixin created with Decl()', () => {
       const size = (width, height) => Decl({width, height})
       const decl = Decl({display: 'block'}).mixin(size(250, 300))
-
-      const context = Context('.box', null)
-      const lists = decl._export(context, [])
+      const lists = decl._export(['.box'], [])
       expect(lists).to.eql([
         { // mixin in decl
           '.box': {
@@ -155,8 +144,7 @@ describe('Decl', () => {
         .mixin({lineHeight: 1.5})
         .mixin({color: 'red'})
 
-      const context = Context('.foo', null)
-      const lists = decl._export(context, [])
+      const lists = decl._export(['.foo'], [])
       expect(lists).to.eql([
         { // first mixin
           '.foo': {lineHeight: 1.5},
@@ -178,8 +166,7 @@ describe('Decl', () => {
       const decl = Decl({background: '#ccc'})
         .mixin(mixin)
 
-      const context = Context('.foo', null)
-      const lists = decl._export(context, [])
+      const lists = decl._export(['.foo'], [])
       expect(lists).to.eql([
         { // mixin in decl
           '.foo': {
@@ -210,8 +197,7 @@ describe('Decl', () => {
         )
         .mixin({color: 'red'})
 
-      const context = Context('.foo', null)
-      const lists = decl._export(context, [])
+      const lists = decl._export(['.foo'], [])
       expect(lists).to.eql([
         { // mixin in decl
           '.foo': {
@@ -236,9 +222,7 @@ describe('Decl', () => {
     it('should export mixin applied to another mixin', () => {
       const mixin = Decl({color: 'red'}).mixin({color: 'blue'})
       const decl = Decl({color: 'green'}).mixin(mixin)
-
-      const context = Context('.foo', null)
-      const lists = decl._export(context, [])
+      const lists = decl._export(['.foo'], [])
       expect(lists).to.eql([
         { // mixin in mixin
           '.foo': {color: 'blue'},
@@ -259,8 +243,7 @@ describe('Decl', () => {
     it('should export object representation of CSS rules', () => {
       const decl = Decl({color: '#333'})
         .nest(_ => `${ _ }.active`, {color: '#666'})
-      const context = Context('.foo', null)
-      const result = decl.export(context)
+      const result = decl.export(['.foo'])
       expect(result).to.eql({
         '.foo': {color: '#333'},
         '.foo.active': {color: '#666'},
@@ -277,8 +260,7 @@ describe('Decl', () => {
           color: 'red',
         })
 
-      const context = Context('.foo', null)
-      const result = decl.export(context)
+      const result = decl.export(['.foo'])
       expect(result).to.eql({
         '.foo': {
           fontSize: 16,
@@ -300,8 +282,7 @@ describe('Decl', () => {
           color: 'blue',
         })
 
-      const context = Context('.foo', null)
-      const result = decl.export(context)
+      const result = decl.export(['.foo'])
       expect(result).to.eql({
         '.foo': {
           fontSize: 16,
@@ -320,8 +301,7 @@ describe('Decl', () => {
         .nest(_ => `${ _ }:hover`, {})
         .mixin(mixin)
 
-      const context = Context('.foo', null)
-      const result = decl.export(context)
+      const result = decl.export(['.foo'])
       expect(Object.keys(result)).to.eql([
         '.foo',
         '.foo:focus',

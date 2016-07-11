@@ -1,5 +1,3 @@
-import _ from 'lodash'
-
 const toArray = items => (
   items
     ? Array.isArray(items) ? items : [items]
@@ -7,21 +5,28 @@ const toArray = items => (
 )
 
 export default (selectors, context) => {
-  const resolved = context
-    ? typeof selectors === 'function'
-      ? _.flatMap(
-          context,
-          contextSelector => toArray(
-            selectors(contextSelector)
-          )
-        )
-      : _.flatMap(
-          context,
-          contextSelector =>
-            toArray(selectors)
-              .map(selector => `${ contextSelector } ${ selector }`)
-        )
-    : toArray(selectors)
+  if (!context) {
+    return toArray(selectors)
+  }
+
+  const resolved = []
+  if (typeof selectors === 'function') {
+    context.forEach(contextSelector => {
+      toArray(
+        selectors(contextSelector)
+      )
+        .forEach(selector => {
+          resolved.push(selector)
+        })
+    })
+  } else {
+    selectors = toArray(selectors)
+    context.forEach(contextSelector => {
+      selectors.forEach(selector => {
+        resolved.push(`${ contextSelector } ${ selector }`)
+      })
+    })
+  }
 
   return resolved
 }

@@ -255,6 +255,101 @@ describe('Decl', () => {
         ],
       })
     })
+
+    it('should resolve media rule declared with plain-object', () => {
+      const decl = Decl({fontSize: 16})
+        .atMedia('(max-width: 480px)', {fontSize: 12})
+
+      const result = decl._export(['.foo'])
+      expect(result).to.eql({
+        '': [
+          {
+            '.foo': {fontSize: 16},
+          },
+        ],
+
+        '(max-width: 480px)': [
+          {
+            '.foo': {fontSize: 12},
+          },
+        ],
+      })
+    })
+
+    it('should resolve media rule declared with Decl()', () => {
+      const decl = Decl({fontSize: 16})
+        .atMedia('(max-width: 480px)', Decl({fontSize: 12}))
+
+      const result = decl._export(['.foo'])
+      expect(result).to.eql({
+        '': [
+          {
+            '.foo': {fontSize: 16},
+          },
+        ],
+
+        '(max-width: 480px)': [
+          {
+            '.foo': {fontSize: 12},
+          },
+        ],
+      })
+    })
+
+    it('should resolve multiple media rules', () => {
+      const decl = Decl()
+        .atMedia('(max-width: 480px)', {
+          fontSize: 12,
+          lineHeight: 1.2,
+        })
+        .atMedia('(max-width: 360px)', {fontSize: 10})
+        .atMedia('(max-width: 360px)', {lineHeight: 1})
+
+      const result = decl._export(['.foo'])
+      expect(result).to.eql({
+        '': [],
+
+        '(max-width: 480px)': [
+          {
+            '.foo': {
+              fontSize: 12,
+              lineHeight: 1.2,
+            },
+          },
+        ],
+
+        '(max-width: 360px)': [
+          {
+            '.foo': {fontSize: 10},
+          },
+
+          {
+            '.foo': {lineHeight: 1},
+          },
+        ],
+      })
+    })
+
+    it('should resolve media rule of nested rule', () => {
+      const decl = Decl()
+        .atMedia('(max-width: 480px)', Decl().nest('.bar', {fontSize: 12}))
+        .nest('.bar', Decl().atMedia('(max-width: 480px)', {lineHeight: 1.2}))
+
+      const result = decl._export(['.foo'])
+      expect(result).to.eql({
+        '': [],
+
+        '(max-width: 480px)': [
+          {
+            '.foo .bar': {lineHeight: 1.2},
+          },
+
+          {
+            '.foo .bar': {fontSize: 12},
+          },
+        ],
+      })
+    })
   })
 
   describe('#export()', () => {
@@ -310,7 +405,7 @@ describe('Decl', () => {
       })
     })
 
-    it('should export rules with correct order', () => {
+    it('should export nested rules with correct order', () => {
       const mixin = Decl({})
         .nest(_ => `${ _ }:hover`, {})
         .nest(_ => `${ _ }:active`, {})
@@ -326,6 +421,22 @@ describe('Decl', () => {
         '.foo:hover',
         '.foo:active',
       ])
+    })
+
+    it('should merge media rules with same query', () => {
+      const decl = Decl()
+        .nest('.bar', Decl().atMedia('(max-width: 480px)', {lineHeight: 1.2}))
+        .atMedia('(max-width: 480px)', Decl().nest('.bar', {fontSize: 12}))
+
+      const result = decl.export(['.foo'])
+      expect(result).to.eql({
+        '@media (max-width: 480px)': {
+          '.foo .bar': {
+            fontSize: 12,
+            lineHeight: 1.2,
+          },
+        },
+      })
     })
   })
 })

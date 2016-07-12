@@ -25,17 +25,19 @@ const proto = Object.freeze({
     return this
   },
 
-  _export(context, mediaMap = {'': []}, rulesList = null, rules = null) {
-    if (!rulesList) {
-      rulesList = mediaMap['']
-    }
+  atMedia(media, decl) {
+    this.mediaRules.push({media, decl})
+    return this
+  },
 
+  _export(context, mediaMap = {'': []}, media = '', rules = null) {
+    const rulesList = mediaMap[media]
     const appended = !rules
     if (appended) {
       rules = {}
     }
 
-    const {mixins, props, nestedRules} = this
+    const {mixins, props, nestedRules, mediaRules} = this
     if (context) {
       const selector = context.join(',')
       if (props) {
@@ -48,7 +50,7 @@ const proto = Object.freeze({
 
       mixins.forEach(mixin => {
         if (proto.isPrototypeOf(mixin)) {
-          mixin._export(context, mediaMap, rulesList)
+          mixin._export(context, mediaMap, media)
         } else {
           rulesList.push({[selector]: mixin})
         }
@@ -62,7 +64,7 @@ const proto = Object.freeze({
     nestedRules.forEach(({selectors, decl}) => {
       const nestedContext = resolve(selectors, context)
       if (proto.isPrototypeOf(decl)) {
-        decl._export(nestedContext, mediaMap, rulesList, rules)
+        decl._export(nestedContext, mediaMap, media, rules)
       } else {
         const selector = nestedContext.join(',')
         if (hasOwnProperty.call(rules, selector)) {
@@ -70,6 +72,18 @@ const proto = Object.freeze({
         }
 
         rules[selector] = decl
+      }
+    })
+
+    mediaRules.forEach(({media: nestedMedia, decl}) => {
+      if (!hasOwnProperty.call(mediaMap, nestedMedia)) {
+        mediaMap[nestedMedia] = []
+      }
+
+      if (proto.isPrototypeOf(decl)) {
+        decl._export(context, mediaMap, nestedMedia)
+      } else {
+        mediaMap[nestedMedia].push({[context.join(',')]: decl})
       }
     })
 
@@ -82,7 +96,16 @@ const proto = Object.freeze({
 
   export(context) {
     const mediaMap = this._export(context)
-    return mergeRules(mediaMap[''])
+
+    const mergedRules = mergeRules(mediaMap[''])
+    delete mediaMap['']
+
+    Object.keys(mediaMap)
+      .forEach(media => {
+        mergedRules[`@media ${ media }`] = mergeRules(mediaMap[media])
+      })
+
+    return mergedRules
   },
 })
 
@@ -101,6 +124,12 @@ export default props =>
     },
 
     nestedRules: {
+      writable: false,
+      configurable: false,
+      value: [],
+    },
+
+    mediaRules: {
       writable: false,
       configurable: false,
       value: [],

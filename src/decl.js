@@ -4,6 +4,16 @@ import merge from './merge'
 import resolve from './resolve'
 
 const hasOwnProperty = Object.prototype.hasOwnProperty
+const mergeRules = rulesList => {
+  const mergedRules = {}
+  const selectorLists = rulesList.map(rules => Object.keys(rules))
+  merge(selectorLists).forEach(selector => {
+    mergedRules[selector] = {}
+  })
+
+  return rulesList.reduce(_.merge, mergedRules)
+}
+
 const proto = Object.freeze({
   mixin(decl) {
     this.mixins.push(decl)
@@ -71,15 +81,8 @@ const proto = Object.freeze({
   },
 
   export(context) {
-    const rulesList = this._export(context)['']
-
-    const mergedRules = {}
-    const selectorLists = rulesList.map(rules => Object.keys(rules))
-    merge(selectorLists).forEach(selector => {
-      mergedRules[selector] = {}
-    })
-
-    return rulesList.reduce(_.merge, mergedRules)
+    const mediaMap = this._export(context)
+    return mergeRules(mediaMap[''])
   },
 })
 

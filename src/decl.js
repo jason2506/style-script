@@ -51,11 +51,11 @@ const proto = Object.freeze({
         decl._export(nestedContext, lists, rules)
       } else {
         const selector = nestedContext.join(',')
-        if (!hasOwnProperty.call(rules, selector)) {
-          rules[selector] = decl
-        } else {
-          throw new Error(`Rule alread defined: "${ nestedContext }"`)
+        if (hasOwnProperty.call(rules, selector)) {
+          throw new Error(`Rule alread defined: "${ selector }"`)
         }
+
+        rules[selector] = decl
       }
     })
 

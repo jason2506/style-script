@@ -11,17 +11,21 @@ const proto = Object.freeze({
   },
 
   nest(selectors, decl) {
-    this.children.push({selectors, decl})
+    this.nestedRules.push({selectors, decl})
     return this
   },
 
-  _export(context, lists, rules) {
+  _export(context, mediaMap = {'': []}, rulesList = null, rules = null) {
+    if (!rulesList) {
+      rulesList = mediaMap['']
+    }
+
     const appended = !rules
     if (appended) {
       rules = {}
     }
 
-    const {mixins, props, children} = this
+    const {mixins, props, nestedRules} = this
     if (context) {
       const selector = context.join(',')
       if (props) {
@@ -34,9 +38,9 @@ const proto = Object.freeze({
 
       mixins.forEach(mixin => {
         if (proto.isPrototypeOf(mixin)) {
-          mixin._export(context, lists)
+          mixin._export(context, mediaMap, rulesList)
         } else {
-          lists.push({[selector]: mixin})
+          rulesList.push({[selector]: mixin})
         }
       })
     } else if (props && Object.keys(props).length) {
@@ -45,10 +49,10 @@ const proto = Object.freeze({
       throw new Error('Decl with mixins can not be exported without context')
     }
 
-    children.forEach(({selectors, decl}) => {
+    nestedRules.forEach(({selectors, decl}) => {
       const nestedContext = resolve(selectors, context)
       if (proto.isPrototypeOf(decl)) {
-        decl._export(nestedContext, lists, rules)
+        decl._export(nestedContext, mediaMap, rulesList, rules)
       } else {
         const selector = nestedContext.join(',')
         if (hasOwnProperty.call(rules, selector)) {
@@ -60,22 +64,22 @@ const proto = Object.freeze({
     })
 
     if (appended && Object.keys(rules).length) {
-      lists.push(rules)
+      rulesList.push(rules)
     }
 
-    return lists
+    return mediaMap
   },
 
   export(context) {
-    const lists = this._export(context, [])
+    const rulesList = this._export(context)['']
 
     const mergedRules = {}
-    const selectorLists = lists.map(rules => Object.keys(rules))
+    const selectorLists = rulesList.map(rules => Object.keys(rules))
     merge(selectorLists).forEach(selector => {
       mergedRules[selector] = {}
     })
 
-    return lists.reduce(_.merge, mergedRules)
+    return rulesList.reduce(_.merge, mergedRules)
   },
 })
 
@@ -93,7 +97,7 @@ export default props =>
       value: props,
     },
 
-    children: {
+    nestedRules: {
       writable: false,
       configurable: false,
       value: [],

@@ -6,8 +6,8 @@ describe('Decl', () => {
   describe('#_export()', () => {
     it('should not export Decl without props', () => {
       const decl = Decl()
-      const lists = decl._export(null, [])
-      expect(lists).to.eql([])
+      const result = decl._export()
+      expect(result).to.eql({'': []})
     })
 
     it('should throw error when non-empty Decl is exported without context', () => {
@@ -16,7 +16,7 @@ describe('Decl', () => {
         lineHeight: 1.5,
       })
 
-      const f = () => decl._export(null, [])
+      const f = () => decl._export()
       expect(f).to.throw(Error, /^Decl with props can not be exported without context$/)
     })
 
@@ -26,15 +26,17 @@ describe('Decl', () => {
         lineHeight: 1.5,
       })
 
-      const lists = decl._export(['html'], [])
-      expect(lists).to.eql([
-        {
-          html: {
-            fontSize: 16,
-            lineHeight: 1.5,
+      const result = decl._export(['html'])
+      expect(result).to.eql({
+        '': [
+          {
+            html: {
+              fontSize: 16,
+              lineHeight: 1.5,
+            },
           },
-        },
-      ])
+        ],
+      })
     })
 
     it('should handle Decl with multiple selectors', () => {
@@ -42,14 +44,16 @@ describe('Decl', () => {
         boxSizing: 'border-box',
       })
 
-      const lists = decl._export(['*', '*:before', '*:after'], [])
-      expect(lists).to.eql([
-        {
-          '*,*:before,*:after': {
-            boxSizing: 'border-box',
+      const result = decl._export(['*', '*:before', '*:after'])
+      expect(result).to.eql({
+        '': [
+          {
+            '*,*:before,*:after': {
+              boxSizing: 'border-box',
+            },
           },
-        },
-      ])
+        ],
+      })
     })
 
     it('should resolve nested rules', () => {
@@ -63,80 +67,86 @@ describe('Decl', () => {
           color: '#999',
         })
 
-      const lists = decl._export(['.foo'], [])
-      expect(lists).to.eql([
-        {
-          '.foo': {
-            color: '#333',
-          },
+      const result = decl._export(['.foo'])
+      expect(result).to.eql({
+        '': [
+          {
+            '.foo': {
+              color: '#333',
+            },
 
-          '.foo:hover,.foo:active': {
-            color: '#666',
-          },
+            '.foo:hover,.foo:active': {
+              color: '#666',
+            },
 
-          '.foo:visited': {
-            color: '#999',
+            '.foo:visited': {
+              color: '#999',
+            },
           },
-        },
-      ])
+        ],
+      })
     })
 
     it('should detect conflicted rule declared with plain-object', () => {
       const decl = Decl({}).nest(_ => '.foo', {})
-      const f = () => decl._export(['.foo'], [])
+      const f = () => decl._export(['.foo'])
       expect(f).to.throw(Error, /^Rule alread defined: ".foo"$/)
     })
 
     it('should detect conflicted rule declared with Decl()', () => {
       const decl = Decl({}).nest(_ => '.foo', Decl({}))
-      const f = () => decl._export(['.foo'], [])
+      const f = () => decl._export(['.foo'])
       expect(f).to.throw(Error, /^Rule alread defined: ".foo"$/)
     })
 
     it('should throw error when Decl with mixin is exported without context', () => {
       const decl = Decl().mixin({})
-      const f = () => decl._export(null, [])
+      const f = () => decl._export()
       expect(f).to.throw(Error, /^Decl with mixins can not be exported without context$/)
     })
 
     it('should export mixin defined with plain-object', () => {
       const size = (width, height) => ({width, height})
       const decl = Decl({display: 'block'}).mixin(size(250, 300))
-      const lists = decl._export(['.box'], [])
-      expect(lists).to.eql([
-        { // mixin in decl
-          '.box': {
-            width: 250,
-            height: 300,
+      const result = decl._export(['.box'])
+      expect(result).to.eql({
+        '': [
+          { // mixin in decl
+            '.box': {
+              width: 250,
+              height: 300,
+            },
           },
-        },
 
-        { // decl
-          '.box': {
-            display: 'block',
+          { // decl
+            '.box': {
+              display: 'block',
+            },
           },
-        },
-      ])
+        ],
+      })
     })
 
     it('should export mixin created with Decl()', () => {
       const size = (width, height) => Decl({width, height})
       const decl = Decl({display: 'block'}).mixin(size(250, 300))
-      const lists = decl._export(['.box'], [])
-      expect(lists).to.eql([
-        { // mixin in decl
-          '.box': {
-            width: 250,
-            height: 300,
+      const result = decl._export(['.box'])
+      expect(result).to.eql({
+        '': [
+          { // mixin in decl
+            '.box': {
+              width: 250,
+              height: 300,
+            },
           },
-        },
 
-        { // decl
-          '.box': {
-            display: 'block',
+          { // decl
+            '.box': {
+              display: 'block',
+            },
           },
-        },
-      ])
+        ],
+      })
     })
 
     it('should export mixins in the same order of application', () => {
@@ -144,20 +154,22 @@ describe('Decl', () => {
         .mixin({lineHeight: 1.5})
         .mixin({color: 'red'})
 
-      const lists = decl._export(['.foo'], [])
-      expect(lists).to.eql([
-        { // first mixin
-          '.foo': {lineHeight: 1.5},
-        },
+      const result = decl._export(['.foo'])
+      expect(result).to.eql({
+        '': [
+          { // first mixin
+            '.foo': {lineHeight: 1.5},
+          },
 
-        { // second mixin
-          '.foo': {color: 'red'},
-        },
+          { // second mixin
+            '.foo': {color: 'red'},
+          },
 
-        { // decl
-          '.foo': {fontSize: 16},
-        },
-      ])
+          { // decl
+            '.foo': {fontSize: 16},
+          },
+        ],
+      })
     })
 
     it('should export mixin with nested rules', () => {
@@ -166,24 +178,26 @@ describe('Decl', () => {
       const decl = Decl({background: '#ccc'})
         .mixin(mixin)
 
-      const lists = decl._export(['.foo'], [])
-      expect(lists).to.eql([
-        { // mixin in decl
-          '.foo': {
-            position: 'relative',
+      const result = decl._export(['.foo'])
+      expect(result).to.eql({
+        '': [
+          { // mixin in decl
+            '.foo': {
+              position: 'relative',
+            },
+
+            '.foo > .nested': {
+              position: 'absolute',
+            },
           },
 
-          '.foo > .nested': {
-            position: 'absolute',
+          { // decl
+            '.foo': {
+              background: '#ccc',
+            },
           },
-        },
-
-        { // decl
-          '.foo': {
-            background: '#ccc',
-          },
-        },
-      ])
+        ],
+      })
     })
 
     it('should export mixin applied to nested rule', () => {
@@ -197,45 +211,49 @@ describe('Decl', () => {
         )
         .mixin({color: 'red'})
 
-      const lists = decl._export(['.foo'], [])
-      expect(lists).to.eql([
-        { // mixin in decl
-          '.foo': {
-            color: 'red',
+      const result = decl._export(['.foo'])
+      expect(result).to.eql({
+        '': [
+          { // mixin in decl
+            '.foo': {
+              color: 'red',
+            },
           },
-        },
 
-        { // mixin in nested decl
-          '.foo .nested': {
-            lineHeight: 1.5,
+          { // mixin in nested decl
+            '.foo .nested': {
+              lineHeight: 1.5,
+            },
           },
-        },
 
-        { // decl
-          '.foo .nested': {
-            fontSize: 16,
+          { // decl
+            '.foo .nested': {
+              fontSize: 16,
+            },
           },
-        },
-      ])
+        ],
+      })
     })
 
     it('should export mixin applied to another mixin', () => {
       const mixin = Decl({color: 'red'}).mixin({color: 'blue'})
       const decl = Decl({color: 'green'}).mixin(mixin)
-      const lists = decl._export(['.foo'], [])
-      expect(lists).to.eql([
-        { // mixin in mixin
-          '.foo': {color: 'blue'},
-        },
+      const result = decl._export(['.foo'])
+      expect(result).to.eql({
+        '': [
+          { // mixin in mixin
+            '.foo': {color: 'blue'},
+          },
 
-        { // mixin in decl
-          '.foo': {color: 'red'},
-        },
+          { // mixin in decl
+            '.foo': {color: 'red'},
+          },
 
-        { // decl
-          '.foo': {color: 'green'},
-        },
-      ])
+          { // decl
+            '.foo': {color: 'green'},
+          },
+        ],
+      })
     })
   })
 

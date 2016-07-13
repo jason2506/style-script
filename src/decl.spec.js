@@ -351,6 +351,12 @@ describe('Decl', () => {
       })
     })
 
+    it('should throw error when media rule with props is exported without context', () => {
+      const decl = Decl().atMedia('(max-width: 480px)', {})
+      const f = () => decl._export()
+      expect(f).to.throw(Error, /^Media rule with props can not be exported without context$/)
+    })
+
     it('should throw error when nesting atMedia() inside atMedia()', () => {
       const decl = Decl()
         .atMedia('(max-width: 480px)', Decl().atMedia('(min-width: 240px)', {}))

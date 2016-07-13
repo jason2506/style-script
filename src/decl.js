@@ -86,8 +86,10 @@ const proto = Object.freeze({
 
       if (proto.isPrototypeOf(decl)) {
         decl._export(context, mediaMap, nestedMedia)
-      } else {
+      } else if (context) {
         mediaMap[nestedMedia].push({[context.join(',')]: decl})
+      } else {
+        throw new Error('Media rule with props can not be exported without context')
       }
     })
 

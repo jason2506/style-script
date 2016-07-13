@@ -8,7 +8,7 @@ Writing JavaScript-powered stylesheets.
 ### Basic Rule
 
 ```javascript
-import {StyleSheet} from 'style-script'
+import { StyleSheet } from 'style-script'
 
 const styles = StyleSheet()
   .addRule('html', {
@@ -31,7 +31,7 @@ export default styles.export()
 ### Rule with Multiple Selectors
 
 ```javascript
-import {StyleSheet} from 'style-script'
+import { StyleSheet } from 'style-script'
 
 const styles = StyleSheet()
   .addRule(['html', 'body'], {
@@ -52,13 +52,13 @@ export default styles.export()
 ### Nested Rule
 
 ```javascript
-import {StyleSheet, Decl} from 'style-script'
+import { StyleSheet, Decl } from 'style-script'
 
 const styles = StyleSheet()
   .addRule('.wrapper',
     Decl({})
-      .nest(_ => [`${ _ }:hover`, `${ _ }:focus`], {})
-      .nest(_ => `${ _ } > .child`, {})
+      .nest(_ => [`${_}:hover`, `${_}:focus`], {})
+      .nest(_ => `${_} > .child`, {})
       .nest('> .another-child', {})
       .nest('.descendant', {})
   )
@@ -79,9 +79,9 @@ export default styles.export()
 ### Mixin
 
 ```javascript
-import {StyleSheet, Decl} from 'style-script'
+import { StyleSheet, Decl } from 'style-script'
 
-const size = (width, height) => ({width, height})
+const size = (width, height) => ({ width, height })
 
 const styles = StyleSheet()
   .addRule('.box',
@@ -107,7 +107,7 @@ export default styles.export()
 ### Media Query
 
 ```javascript
-import {StyleSheet, Decl} from 'style-script'
+import { StyleSheet, Decl } from 'style-script'
 
 const styles = StyleSheet()
   .addRule('html',
@@ -159,7 +159,7 @@ import postcssJs from 'postcss-js'
 import autoprefixer from 'autoprefixer'
 import cssnano from 'cssnano'
 
-import {StyleSheet} from 'style-script'
+import { StyleSheet } from 'style-script'
 
 const styles = StyleSheet()
   .addRule('html', {
@@ -168,7 +168,7 @@ const styles = StyleSheet()
   })
 
 postcss([autoprefixer, cssnano])
-  .process(styles.export(), {parser: postcssJs})
+  .process(styles.export(), { parser: postcssJs })
   .then(result => {
     console.log(result.css)
   })

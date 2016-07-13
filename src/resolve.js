@@ -23,7 +23,7 @@ export default (selectors, context) => {
     selectors = toArray(selectors)
     context.forEach(contextSelector => {
       selectors.forEach(selector => {
-        resolved.push(`${ contextSelector } ${ selector }`)
+        resolved.push(`${contextSelector} ${selector}`)
       })
     })
   }

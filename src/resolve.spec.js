@@ -1,4 +1,4 @@
-import chai, {expect} from 'chai'
+import chai, { expect } from 'chai'
 import spies from 'chai-spies'
 
 import resolve from './resolve'
@@ -46,7 +46,7 @@ describe('resolve()', () => {
   })
 
   it('should pass resolved selector of context to selector function', () => {
-    const spy = chai.spy(_ => `${ _ }-bar`)
+    const spy = chai.spy(_ => `${_}-bar`)
     const context = resolve('.foo')
     resolve(spy, context)
     expect(spy).to.have.been.called.exactly(1)
@@ -54,7 +54,7 @@ describe('resolve()', () => {
   })
 
   it('should call selector function with each resolved selector of context', () => {
-    const spy = chai.spy(_ => `${ _ }-x`)
+    const spy = chai.spy(_ => `${_}-x`)
     const context = resolve(['.a', '.b > .c', '.d .e'])
     resolve(spy, context)
     expect(spy).to.have.been.called.exactly(3)
@@ -65,7 +65,7 @@ describe('resolve()', () => {
 
   it('should resolve selectors with single result of selector function', () => {
     const context = resolve(['.a', '.b > .c', '.d .e'])
-    const selectors = resolve(_ => `${ _ }-x`, context)
+    const selectors = resolve(_ => `${_}-x`, context)
     expect(selectors).to.eql([
       '.a-x',
       '.b > .c-x',
@@ -75,7 +75,7 @@ describe('resolve()', () => {
 
   it('should resolve selectors with each result of selector function', () => {
     const context = resolve(['.a', '.b > .c', '.d .e'])
-    const selectors = resolve(_ => [`${ _ }-x`, `${ _ }-y`], context)
+    const selectors = resolve(_ => [`${_}-x`, `${_}-y`], context)
     expect(selectors).to.eql([
       '.a-x',
       '.a-y',
@@ -88,7 +88,7 @@ describe('resolve()', () => {
 
   it('should resolve selectors with higher-level context', () => {
     const parentContext = resolve(['.a', '.b', '.c'])
-    const context = resolve(_ => `${ _ }-d`, parentContext)
+    const context = resolve(_ => `${_}-d`, parentContext)
     const selectors = resolve(['.e', '.f'], context)
     expect(selectors).to.eql([
       '.a-d .e',

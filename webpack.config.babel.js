@@ -18,7 +18,7 @@ export default {
   output: {
     library,
     libraryTarget: 'commonjs2',
-    filename: `${ library }.js`,
+    filename: `${library}.js`,
     path: libPath,
   },
 

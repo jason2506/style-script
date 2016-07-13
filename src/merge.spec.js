@@ -1,7 +1,7 @@
-import chai, {expect} from 'chai'
+import chai, { expect } from 'chai'
 import spies from 'chai-spies'
 
-import merge, {updateWithDefault, getCounts} from './merge'
+import merge, { updateWithDefault, getCounts } from './merge'
 
 chai.use(spies)
 
@@ -17,14 +17,14 @@ describe('updateWithDefault()', () => {
 
     it('should insert key with result of update function', () => {
       const map = {}
-      updateWithDefault(map, 'key', 'default', val => `${ val } value`)
+      updateWithDefault(map, 'key', 'default', val => `${val} value`)
       expect(map.key).to.equal('default value')
     })
   })
 
   context('if key is in the map', () => {
     it('should invlove update function with existing value', () => {
-      const map = {key: 'existing'}
+      const map = { key: 'existing' }
       const spy = chai.spy(val => val)
       updateWithDefault(map, 'key', 'default', spy)
       expect(spy).to.have.been.called.exactly(1)
@@ -32,8 +32,8 @@ describe('updateWithDefault()', () => {
     })
 
     it('should update map with result of update function', () => {
-      const map = {key: 'existing'}
-      updateWithDefault(map, 'key', 'default', val => `${ val } value`)
+      const map = { key: 'existing' }
+      updateWithDefault(map, 'key', 'default', val => `${val} value`)
       expect(map.key).to.equal('existing value')
     })
   })
@@ -61,11 +61,11 @@ describe('getCounts()', () => {
     })
 
     expect(childCounts).to.eql({
-      a: {b: 1},
-      b: {c: 2},
-      c: {d: 1, e: 1, f: 1},
-      d: {e: 1},
-      e: {f: 1},
+      a: { b: 1 },
+      b: { c: 2 },
+      c: { d: 1, e: 1, f: 1 },
+      d: { e: 1 },
+      e: { f: 1 },
       // f: {},
     })
   })

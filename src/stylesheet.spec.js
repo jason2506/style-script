@@ -1,4 +1,4 @@
-import {expect} from 'chai'
+import { expect } from 'chai'
 
 import Decl from './decl'
 import StyleSheet from './stylesheet'
@@ -20,14 +20,14 @@ describe('StyleSheet', () => {
         })
         .addRule('*',
           Decl()
-            .nest(_ => [_, `${ _ }:before`, `${ _ }:after`], {
+            .nest(_ => [_, `${_}:before`, `${_}:after`], {
               boxSizing: 'inherit',
             })
         )
 
       const result = styles.export()
       expect(result).to.eql({
-        html: {
+        'html': {
           fontSize: 16,
           lineHeight: 1.5,
           boxSizing: 'border-box',

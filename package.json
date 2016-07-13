@@ -25,12 +25,14 @@
     "url": "https://github.com/jason2506/style-script/issues"
   },
   "homepage": "https://github.com/jason2506/style-script#readme",
+  "dependencies": {
+    "lodash": "^4.13.1"
+  },
   "devDependencies": {
     "babel-loader": "^6.2.4",
     "babel-preset-es2015": "^6.9.0",
     "chai": "^3.5.0",
     "chai-spies": "^0.7.1",
-    "lodash": "^4.13.1",
     "mocha": "^2.5.3",
     "webpack": "^1.13.1"
   }

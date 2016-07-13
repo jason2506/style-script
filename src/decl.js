@@ -75,6 +75,10 @@ const proto = Object.freeze({
       }
     })
 
+    if (mediaRules.length && media !== '') {
+      throw new Error('Nested atMedia() inside atMedia() is not supported')
+    }
+
     mediaRules.forEach(({media: nestedMedia, decl}) => {
       if (!hasOwnProperty.call(mediaMap, nestedMedia)) {
         mediaMap[nestedMedia] = []

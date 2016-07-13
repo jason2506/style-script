@@ -350,6 +350,14 @@ describe('Decl', () => {
         ],
       })
     })
+
+    it('should throw error when nesting atMedia() inside atMedia()', () => {
+      const decl = Decl()
+        .atMedia('(max-width: 480px)', Decl().atMedia('(min-width: 240px)', {}))
+
+      const f = () => decl._export(['.foo'])
+      expect(f).to.throw(Error, /^Nested atMedia\(\) inside atMedia\(\) is not supported$/)
+    })
   })
 
   describe('#export()', () => {

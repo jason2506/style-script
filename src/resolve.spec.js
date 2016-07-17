@@ -86,6 +86,19 @@ describe('resolve()', () => {
     ])
   })
 
+  it('should resolve selectors with array of selector functions', () => {
+    const context = resolve(['.a', '.b > .c', '.d .e'])
+    const selectors = resolve([_ => `${_}-x`, _ => `${_}-y`], context)
+    expect(selectors).to.eql([
+      '.a-x',
+      '.a-y',
+      '.b > .c-x',
+      '.b > .c-y',
+      '.d .e-x',
+      '.d .e-y',
+    ])
+  })
+
   it('should resolve selectors with higher-level context', () => {
     const parentContext = resolve(['.a', '.b', '.c'])
     const context = resolve(_ => `${_}-d`, parentContext)

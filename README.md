@@ -58,6 +58,7 @@ const styles = StyleSheet()
   .addRule('.wrapper',
     Decl({})
       .nest(_ => [`${_}:hover`, `${_}:focus`], {})
+      .nest([_ => `${_}::before`, _ => `${_}::after`], {})
       .nest(_ => `${_} > .child`, {})
       .nest('> .another-child', {})
       .nest('.descendant', {})
@@ -70,6 +71,7 @@ export default styles.export()
 {
   ".wrapper": {},
   ".wrapper:hover,.wrapper:focus": {},
+  ".wrapper::before,.wrapper::after": {},
   ".wrapper > .child": {},
   ".wrapper > .another-child": {},
   ".wrapper .descendant": {}

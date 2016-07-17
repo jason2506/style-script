@@ -5,28 +5,26 @@ const toArray = items => (
 )
 
 export default (selectors, context) => {
+  selectors = toArray(selectors)
   if (!context) {
-    return toArray(selectors)
+    return selectors
   }
 
   const resolved = []
-  if (typeof selectors === 'function') {
-    context.forEach(contextSelector => {
-      toArray(
-        selectors(contextSelector)
-      )
-        .forEach(selector => {
-          resolved.push(selector)
-        })
-    })
-  } else {
-    selectors = toArray(selectors)
-    context.forEach(contextSelector => {
-      selectors.forEach(selector => {
+  context.forEach(contextSelector => {
+    selectors.forEach(selector => {
+      if (typeof selector === 'function') {
+        toArray(
+          selector(contextSelector)
+        )
+          .forEach(result => {
+            resolved.push(result)
+          })
+      } else {
         resolved.push(`${contextSelector} ${selector}`)
-      })
+      }
     })
-  }
+  })
 
   return resolved
 }

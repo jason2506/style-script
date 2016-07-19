@@ -33,6 +33,6 @@ export default {
   },
 
   externals: {
-    lodash: '_',
+    lodash: true,
   },
 }

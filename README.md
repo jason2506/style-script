@@ -87,6 +87,32 @@ console.log(styles.export())
 }
 ```
 
+### Predefined Selector Functions
+
+```javascript
+import { StyleSheet, Decl, $ } from 'style-script'
+
+const styles = StyleSheet()
+  .addRule('.wrapper',
+    Decl()
+      .nest($._.empty, {})
+      .nest($._.child('.child'), {})
+      .nest($._.not($.firstChild), {})
+      .nest([$._, $._.before, $._.after], {})
+  )
+
+console.log(styles.export())
+```
+
+```json
+{
+  ".wrapper:empty": {},
+  ".wrapper>.child": {},
+  ".wrapper:not(:first-child)": {},
+  ".wrapper,.wrapper::before,.wrapper::after": {}
+}
+```
+
 ### Mixin
 
 ```javascript

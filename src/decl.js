@@ -108,7 +108,12 @@ const proto = Object.freeze({
 
     Object.keys(mediaMap)
       .forEach(media => {
-        mergedRules[`@media ${media}`] = mergeRules(mediaMap[media])
+        const query = `@media ${media}`
+        if (hasOwnProperty.call(mergedRules, query)) {
+          throw new Error(`Media rule alread defined: "${query}"`)
+        }
+
+        mergedRules[query] = mergeRules(mediaMap[media])
       })
 
     return mergedRules

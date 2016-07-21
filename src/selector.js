@@ -104,8 +104,8 @@ Object.keys($)
 
 // additional selector combinations
 Object.assign($._, {
-  prepend: after => _ => `${after}${_}`,
-  append: before => _ => `${_}${before}`,
+  prepend: before => _ => `${before}${_}`,
+  append: after => _ => `${_}${after}`,
   surroundWith: (before, after) => _ => `${before}${_}${after}`,
 
   // logical combinations
@@ -114,7 +114,7 @@ Object.assign($._, {
   hasSelf: _ => $.has(_),
 
   // time-dimensional pseudo-classes
-  currentOfSelf: _ => $.current(_),
+  currentOfSelf: _ => $.currentMatches(_),
 
   // tree-structural pseudo-classes
   nthChildOfSelf: n => _ => $.nthChild(n, _),

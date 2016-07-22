@@ -4,6 +4,15 @@ import merge from './merge'
 import resolve from './resolve'
 
 const hasOwnProperty = Object.prototype.hasOwnProperty
+const addRule = (rules, selector, props, media) => {
+  if (hasOwnProperty.call(rules, selector)) {
+    const atMedia = media ? ` [@media ${media}]` : ''
+    throw new Error(`Rule alread defined: "${selector}"${atMedia}`)
+  }
+
+  rules[selector] = props
+}
+
 const mergeRules = (mediaMaps, media) => {
   const mergedRules = {}
   const rulesList = mediaMaps.map(mediaMap => mediaMap[media] || {})
@@ -54,11 +63,7 @@ const proto = Object.freeze({
     if (context) {
       const selector = context.join(',')
       if (props) {
-        if (hasOwnProperty.call(rules, selector)) {
-          throw new Error(`Rule alread defined: "${selector}"`)
-        }
-
-        rules[selector] = props
+        addRule(rules, selector, props, media)
       }
 
       mixins.forEach(mixin => {
@@ -79,12 +84,7 @@ const proto = Object.freeze({
       if (proto.isPrototypeOf(decl)) {
         decl._export(nestedContext, mediaMaps, media, mediaMap)
       } else {
-        const selector = nestedContext.join(',')
-        if (hasOwnProperty.call(rules, selector)) {
-          throw new Error(`Rule alread defined: "${selector}"`)
-        }
-
-        rules[selector] = decl
+        addRule(rules, nestedContext.join(','), decl, media)
       }
     })
 
@@ -100,13 +100,7 @@ const proto = Object.freeze({
       if (proto.isPrototypeOf(decl)) {
         decl._export(context, mediaMaps, nestedMedia, mediaMap)
       } else if (context) {
-        const rulesAtMedia = mediaMap[nestedMedia]
-        const selector = context.join(',')
-        if (hasOwnProperty.call(rulesAtMedia, selector)) {
-          throw new Error(`Rule alread defined: "${selector}"`)
-        }
-
-        rulesAtMedia[selector] = decl
+        addRule(mediaMap[nestedMedia], context.join(','), decl, nestedMedia)
       } else {
         throw new Error('Media rule with props can not be exported without context')
       }

@@ -318,7 +318,7 @@ describe('Decl', () => {
         .atMedia('(max-width: 360px)', { lineHeight: 1 })
 
       const f = () => decl._export(['.foo'])
-      expect(f).to.throw(Error, /^Rule alread defined: "\.foo"$/)
+      expect(f).to.throw(Error, /^Rule alread defined: "\.foo" \[@media \(max-width: 360px\)\]$/)
     })
 
     it('should detect conflicted media rule declared with Decl()', () => {
@@ -327,7 +327,7 @@ describe('Decl', () => {
         .atMedia('(max-width: 360px)', Decl({ lineHeight: 1 }))
 
       const f = () => decl._export(['.foo'])
-      expect(f).to.throw(Error, /^Rule alread defined: "\.foo"$/)
+      expect(f).to.throw(Error, /^Rule alread defined: "\.foo" \[@media \(max-width: 360px\)\]$/)
     })
 
     it('should resolve media rule of nested rule', () => {
@@ -336,7 +336,7 @@ describe('Decl', () => {
         .nest('.foo', Decl().atMedia('(max-width: 480px)', { lineHeight: 1.2 }))
 
       const f = () => decl._export()
-      expect(f).to.throw(Error, /^Rule alread defined: "\.foo"$/)
+      expect(f).to.throw(Error, /^Rule alread defined: "\.foo" \[@media \(max-width: 480px\)\]$/)
     })
 
     it('should throw error when media rule with props is exported without context', () => {

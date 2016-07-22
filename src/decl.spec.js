@@ -7,7 +7,7 @@ describe('Decl', () => {
     it('should not export Decl without props', () => {
       const decl = Decl()
       const result = decl._export()
-      expect(result).to.eql({ '': [] })
+      expect(result).to.eql([{ '': {} }])
     })
 
     it('should throw error when non-empty Decl is exported without context', () => {
@@ -27,16 +27,16 @@ describe('Decl', () => {
       })
 
       const result = decl._export(['html'])
-      expect(result).to.eql({
-        '': [
-          {
+      expect(result).to.eql([
+        {
+          '': {
             html: {
               fontSize: 16,
               lineHeight: 1.5,
             },
           },
-        ],
-      })
+        },
+      ])
     })
 
     it('should handle Decl with multiple selectors', () => {
@@ -45,15 +45,15 @@ describe('Decl', () => {
       })
 
       const result = decl._export(['*', '*:before', '*:after'])
-      expect(result).to.eql({
-        '': [
-          {
+      expect(result).to.eql([
+        {
+          '': {
             '*,*:before,*:after': {
               boxSizing: 'border-box',
             },
           },
-        ],
-      })
+        },
+      ])
     })
 
     it('should resolve nested rules', () => {
@@ -68,9 +68,9 @@ describe('Decl', () => {
         })
 
       const result = decl._export(['.foo'])
-      expect(result).to.eql({
-        '': [
-          {
+      expect(result).to.eql([
+        {
+          '': {
             '.foo': {
               color: '#333',
             },
@@ -83,22 +83,22 @@ describe('Decl', () => {
               color: '#999',
             },
           },
-        ],
-      })
+        },
+      ])
     })
 
     it('should detect conflicted rule declared with plain-object', () => {
       // eslint-disable-next-line no-unused-vars
       const decl = Decl({}).nest(_ => '.foo', {})
       const f = () => decl._export(['.foo'])
-      expect(f).to.throw(Error, /^Rule alread defined: ".foo"$/)
+      expect(f).to.throw(Error, /^Rule alread defined: "\.foo"$/)
     })
 
     it('should detect conflicted rule declared with Decl()', () => {
       // eslint-disable-next-line no-unused-vars
       const decl = Decl({}).nest(_ => '.foo', Decl({}))
       const f = () => decl._export(['.foo'])
-      expect(f).to.throw(Error, /^Rule alread defined: ".foo"$/)
+      expect(f).to.throw(Error, /^Rule alread defined: "\.foo"$/)
     })
 
     it('should throw error when Decl with mixin is exported without context', () => {
@@ -111,44 +111,48 @@ describe('Decl', () => {
       const size = (width, height) => ({ width, height })
       const decl = Decl({ display: 'block' }).mixin(size(250, 300))
       const result = decl._export(['.box'])
-      expect(result).to.eql({
-        '': [
-          { // mixin in decl
+      expect(result).to.eql([
+        {
+          '': { // mixin in decl
             '.box': {
               width: 250,
               height: 300,
             },
           },
+        },
 
-          { // decl
+        {
+          '': { // decl
             '.box': {
               display: 'block',
             },
           },
-        ],
-      })
+        },
+      ])
     })
 
     it('should export mixin created with Decl()', () => {
       const size = (width, height) => Decl({ width, height })
       const decl = Decl({ display: 'block' }).mixin(size(250, 300))
       const result = decl._export(['.box'])
-      expect(result).to.eql({
-        '': [
-          { // mixin in decl
+      expect(result).to.eql([
+        {
+          '': { // mixin in decl
             '.box': {
               width: 250,
               height: 300,
             },
           },
+        },
 
-          { // decl
+        {
+          '': { // decl
             '.box': {
               display: 'block',
             },
           },
-        ],
-      })
+        },
+      ])
     })
 
     it('should export mixins in the same order of application', () => {
@@ -157,21 +161,25 @@ describe('Decl', () => {
         .mixin({ color: 'red' })
 
       const result = decl._export(['.foo'])
-      expect(result).to.eql({
-        '': [
-          { // first mixin
+      expect(result).to.eql([
+        {
+          '': { // first mixin
             '.foo': { lineHeight: 1.5 },
           },
+        },
 
-          { // second mixin
+        {
+          '': { // second mixin
             '.foo': { color: 'red' },
           },
+        },
 
-          { // decl
+        {
+          '': { // decl
             '.foo': { fontSize: 16 },
           },
-        ],
-      })
+        },
+      ])
     })
 
     it('should export mixin with nested rules', () => {
@@ -181,9 +189,9 @@ describe('Decl', () => {
         .mixin(mixin)
 
       const result = decl._export(['.foo'])
-      expect(result).to.eql({
-        '': [
-          { // mixin in decl
+      expect(result).to.eql([
+        {
+          '': { // mixin in decl
             '.foo': {
               position: 'relative',
             },
@@ -192,14 +200,16 @@ describe('Decl', () => {
               position: 'absolute',
             },
           },
+        },
 
-          { // decl
+        {
+          '': { // decl
             '.foo': {
               background: '#ccc',
             },
           },
-        ],
-      })
+        },
+      ])
     })
 
     it('should export mixin applied to nested rule', () => {
@@ -214,48 +224,56 @@ describe('Decl', () => {
         .mixin({ color: 'red' })
 
       const result = decl._export(['.foo'])
-      expect(result).to.eql({
-        '': [
-          { // mixin in decl
+      expect(result).to.eql([
+        {
+          '': { // mixin in decl
             '.foo': {
               color: 'red',
             },
           },
+        },
 
-          { // mixin in nested decl
+        {
+          '': { // mixin in nested decl
             '.foo .nested': {
               lineHeight: 1.5,
             },
           },
+        },
 
-          { // decl
+        {
+          '': { // decl
             '.foo .nested': {
               fontSize: 16,
             },
           },
-        ],
-      })
+        },
+      ])
     })
 
     it('should export mixin applied to another mixin', () => {
       const mixin = Decl({ color: 'red' }).mixin({ color: 'blue' })
       const decl = Decl({ color: 'green' }).mixin(mixin)
       const result = decl._export(['.foo'])
-      expect(result).to.eql({
-        '': [
-          { // mixin in mixin
+      expect(result).to.eql([
+        {
+          '': { // mixin in mixin
             '.foo': { color: 'blue' },
           },
+        },
 
-          { // mixin in decl
+        {
+          '': { // mixin in decl
             '.foo': { color: 'red' },
           },
+        },
 
-          { // decl
+        {
+          '': { // decl
             '.foo': { color: 'green' },
           },
-        ],
-      })
+        },
+      ])
     })
 
     it('should resolve media rule declared with plain-object', () => {
@@ -263,19 +281,17 @@ describe('Decl', () => {
         .atMedia('(max-width: 480px)', { fontSize: 12 })
 
       const result = decl._export(['.foo'])
-      expect(result).to.eql({
-        '': [
-          {
+      expect(result).to.eql([
+        {
+          '': {
             '.foo': { fontSize: 16 },
           },
-        ],
 
-        '(max-width: 480px)': [
-          {
+          '(max-width: 480px)': {
             '.foo': { fontSize: 12 },
           },
-        ],
-      })
+        },
+      ])
     })
 
     it('should resolve media rule declared with Decl()', () => {
@@ -283,74 +299,44 @@ describe('Decl', () => {
         .atMedia('(max-width: 480px)', Decl({ fontSize: 12 }))
 
       const result = decl._export(['.foo'])
-      expect(result).to.eql({
-        '': [
-          {
+      expect(result).to.eql([
+        {
+          '': {
             '.foo': { fontSize: 16 },
           },
-        ],
 
-        '(max-width: 480px)': [
-          {
+          '(max-width: 480px)': {
             '.foo': { fontSize: 12 },
           },
-        ],
-      })
+        },
+      ])
     })
 
-    it('should resolve multiple media rules', () => {
+    it('should detect conflicted media rule declared with plain-object', () => {
       const decl = Decl()
-        .atMedia('(max-width: 480px)', {
-          fontSize: 12,
-          lineHeight: 1.2,
-        })
         .atMedia('(max-width: 360px)', { fontSize: 10 })
         .atMedia('(max-width: 360px)', { lineHeight: 1 })
 
-      const result = decl._export(['.foo'])
-      expect(result).to.eql({
-        '': [],
+      const f = () => decl._export(['.foo'])
+      expect(f).to.throw(Error, /^Rule alread defined: "\.foo"$/)
+    })
 
-        '(max-width: 480px)': [
-          {
-            '.foo': {
-              fontSize: 12,
-              lineHeight: 1.2,
-            },
-          },
-        ],
+    it('should detect conflicted media rule declared with Decl()', () => {
+      const decl = Decl()
+        .atMedia('(max-width: 360px)', Decl({ fontSize: 10 }))
+        .atMedia('(max-width: 360px)', Decl({ lineHeight: 1 }))
 
-        '(max-width: 360px)': [
-          {
-            '.foo': { fontSize: 10 },
-          },
-
-          {
-            '.foo': { lineHeight: 1 },
-          },
-        ],
-      })
+      const f = () => decl._export(['.foo'])
+      expect(f).to.throw(Error, /^Rule alread defined: "\.foo"$/)
     })
 
     it('should resolve media rule of nested rule', () => {
       const decl = Decl()
-        .atMedia('(max-width: 480px)', Decl().nest('.bar', { fontSize: 12 }))
-        .nest('.bar', Decl().atMedia('(max-width: 480px)', { lineHeight: 1.2 }))
+        .atMedia('(max-width: 480px)', Decl().nest('.foo', { fontSize: 12 }))
+        .nest('.foo', Decl().atMedia('(max-width: 480px)', { lineHeight: 1.2 }))
 
-      const result = decl._export(['.foo'])
-      expect(result).to.eql({
-        '': [],
-
-        '(max-width: 480px)': [
-          {
-            '.foo .bar': { lineHeight: 1.2 },
-          },
-
-          {
-            '.foo .bar': { fontSize: 12 },
-          },
-        ],
-      })
+      const f = () => decl._export()
+      expect(f).to.throw(Error, /^Rule alread defined: "\.foo"$/)
     })
 
     it('should throw error when media rule with props is exported without context', () => {
@@ -439,20 +425,36 @@ describe('Decl', () => {
       ])
     })
 
-    it('should merge media rules with same query', () => {
+    it('should export media rules with correct order', () => {
       const decl = Decl()
-        .nest('.bar', Decl().atMedia('(max-width: 480px)', { lineHeight: 1.2 }))
-        .atMedia('(max-width: 480px)', Decl().nest('.bar', { fontSize: 12 }))
+        .nest('.x',
+          Decl()
+            .atMedia('(max-width: 320px)', {})
+            .atMedia('(max-width: 768px)', {})
+            .atMedia('(max-width: 1024px)', {})
+        )
+        .nest('.y',
+          Decl()
+            .atMedia('(max-width: 480px)', {})
+            .atMedia('(max-width: 768px)', {})
+            .atMedia('(max-width: 992px)', {})
+        )
+        .nest('.z',
+          Decl()
+            .atMedia('(max-width: 320px)', {})
+            .atMedia('(max-width: 480px)', {})
+            .atMedia('(max-width: 992px)', {})
+            .atMedia('(max-width: 1024px)', {})
+        )
 
-      const result = decl.export(['.foo'])
-      expect(result).to.eql({
-        '@media (max-width: 480px)': {
-          '.foo .bar': {
-            fontSize: 12,
-            lineHeight: 1.2,
-          },
-        },
-      })
+      const result = decl.export()
+      expect(Object.keys(result)).to.eql([
+        '@media (max-width: 320px)',
+        '@media (max-width: 480px)',
+        '@media (max-width: 768px)',
+        '@media (max-width: 992px)',
+        '@media (max-width: 1024px)',
+      ])
     })
   })
 })

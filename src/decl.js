@@ -4,8 +4,18 @@ import merge from './merge'
 import resolve from './resolve'
 
 const hasOwnProperty = Object.prototype.hasOwnProperty
-const mergeRules = rulesList => {
+const addRule = (rules, selector, props, media) => {
+  if (hasOwnProperty.call(rules, selector)) {
+    const atMedia = media ? ` [@media ${media}]` : ''
+    throw new Error(`Rule alread defined: "${selector}"${atMedia}`)
+  }
+
+  rules[selector] = props
+}
+
+const mergeRules = (mediaMaps, media) => {
   const mergedRules = {}
+  const rulesList = mediaMaps.map(mediaMap => mediaMap[media] || {})
   const selectorLists = rulesList.map(rules => Object.keys(rules))
   merge(selectorLists).forEach(selector => {
     mergedRules[selector] = {}
@@ -14,45 +24,63 @@ const mergeRules = rulesList => {
   return rulesList.reduce(_.merge, mergedRules)
 }
 
-const proto = Object.freeze({
+const proto = {
   mixin(decl) {
-    this.mixins.push(decl)
+    this._mixins.push(decl)
     return this
   },
 
   nest(selectors, decl) {
-    this.nestedRules.push({ selectors, decl })
+    this._nestedRules.push({ selectors, decl })
     return this
   },
 
   atMedia(media, decl) {
-    this.mediaRules.push({ media, decl })
+    this._mediaRules.push({ media, decl })
     return this
   },
 
-  _export(context, mediaMap = { '': [] }, media = '', rules = null) {
-    const rulesList = mediaMap[media]
-    const appended = !rules
+  _dumpMediaRules(list = []) {
+    const {
+      _mediaRules: mediaRules,
+      _nestedRules: nestedRules,
+    } = this
+
+    list.push(mediaRules.map(({ media }) => media))
+    nestedRules.forEach(({ decl }) => {
+      if (proto.isPrototypeOf(decl)) {
+        decl._dumpMediaRules(list)
+      }
+    })
+
+    return list
+  },
+
+  _export(context, mediaMaps = [], media = '', mediaMap = null) {
+    const appended = !mediaMap
     if (appended) {
-      rules = {}
+      mediaMap = { [media]: {} }
     }
 
-    const { mixins, props, nestedRules, mediaRules } = this
+    const rules = mediaMap[media]
+    const {
+      _mixins: mixins,
+      _props: props,
+      _nestedRules: nestedRules,
+      _mediaRules: mediaRules,
+    } = this
+
     if (context) {
       const selector = context.join(',')
       if (props) {
-        if (hasOwnProperty.call(rules, selector)) {
-          throw new Error(`Rule alread defined: "${selector}"`)
-        }
-
-        rules[selector] = props
+        addRule(rules, selector, props, media)
       }
 
       mixins.forEach(mixin => {
         if (proto.isPrototypeOf(mixin)) {
-          mixin._export(context, mediaMap, media)
+          mixin._export(context, mediaMaps, media)
         } else {
-          rulesList.push({ [selector]: mixin })
+          mediaMaps.push({ [media]: { [selector]: mixin } })
         }
       })
     } else if (props && Object.keys(props).length) {
@@ -64,14 +92,9 @@ const proto = Object.freeze({
     nestedRules.forEach(({ selectors, decl }) => {
       const nestedContext = resolve(selectors, context)
       if (proto.isPrototypeOf(decl)) {
-        decl._export(nestedContext, mediaMap, media, rules)
+        decl._export(nestedContext, mediaMaps, media, mediaMap)
       } else {
-        const selector = nestedContext.join(',')
-        if (hasOwnProperty.call(rules, selector)) {
-          throw new Error(`Rule alread defined: "${selector}"`)
-        }
-
-        rules[selector] = decl
+        addRule(rules, nestedContext.join(','), decl, media)
       }
     })
 
@@ -81,63 +104,47 @@ const proto = Object.freeze({
 
     mediaRules.forEach(({ media: nestedMedia, decl }) => {
       if (!hasOwnProperty.call(mediaMap, nestedMedia)) {
-        mediaMap[nestedMedia] = []
+        mediaMap[nestedMedia] = {}
       }
 
       if (proto.isPrototypeOf(decl)) {
-        decl._export(context, mediaMap, nestedMedia)
+        decl._export(context, mediaMaps, nestedMedia, mediaMap)
       } else if (context) {
-        mediaMap[nestedMedia].push({ [context.join(',')]: decl })
+        addRule(mediaMap[nestedMedia], context.join(','), decl, nestedMedia)
       } else {
         throw new Error('Media rule with props can not be exported without context')
       }
     })
 
-    if (appended && Object.keys(rules).length) {
-      rulesList.push(rules)
+    if (appended) {
+      mediaMaps.push(mediaMap)
     }
 
-    return mediaMap
+    return mediaMaps
   },
 
   export(context) {
-    const mediaMap = this._export(context)
-
-    const mergedRules = mergeRules(mediaMap[''])
-    delete mediaMap['']
-
-    Object.keys(mediaMap)
+    const mediaMaps = this._export(context)
+    const mergedRules = mergeRules(mediaMaps, '')
+    merge(this._dumpMediaRules())
       .forEach(media => {
-        mergedRules[`@media ${media}`] = mergeRules(mediaMap[media])
+        const query = `@media ${media}`
+        if (hasOwnProperty.call(mergedRules, query)) {
+          throw new Error(`Media rule alread defined: "${query}"`)
+        }
+
+        mergedRules[query] = mergeRules(mediaMaps, media)
       })
 
     return mergedRules
   },
-})
+}
 
-export default props =>
-  Object.create(proto, {
-    mixins: {
-      writable: false,
-      configurable: false,
-      value: [],
-    },
-
-    props: {
-      writable: false,
-      configurable: false,
-      value: props,
-    },
-
-    nestedRules: {
-      writable: false,
-      configurable: false,
-      value: [],
-    },
-
-    mediaRules: {
-      writable: false,
-      configurable: false,
-      value: [],
-    },
-  })
+export default props => {
+  const decl = Object.create(proto)
+  decl._props = props
+  decl._mixins = []
+  decl._nestedRules = []
+  decl._mediaRules = []
+  return decl
+}

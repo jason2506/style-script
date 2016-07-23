@@ -1,6 +1,6 @@
 {
   "name": "style-script",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Writing JavaScript-powered stylesheets",
   "main": "lib/style-script.js",
   "scripts": {

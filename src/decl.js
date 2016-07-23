@@ -24,24 +24,28 @@ const mergeRules = (mediaMaps, media) => {
   return rulesList.reduce(_.merge, mergedRules)
 }
 
-const proto = Object.freeze({
+const proto = {
   mixin(decl) {
-    this.mixins.push(decl)
+    this._mixins.push(decl)
     return this
   },
 
   nest(selectors, decl) {
-    this.nestedRules.push({ selectors, decl })
+    this._nestedRules.push({ selectors, decl })
     return this
   },
 
   atMedia(media, decl) {
-    this.mediaRules.push({ media, decl })
+    this._mediaRules.push({ media, decl })
     return this
   },
 
   _dumpMediaRules(list = []) {
-    const { mediaRules, nestedRules } = this
+    const {
+      _mediaRules: mediaRules,
+      _nestedRules: nestedRules,
+    } = this
+
     list.push(mediaRules.map(({ media }) => media))
     nestedRules.forEach(({ decl }) => {
       if (proto.isPrototypeOf(decl)) {
@@ -59,7 +63,13 @@ const proto = Object.freeze({
     }
 
     const rules = mediaMap[media]
-    const { mixins, props, nestedRules, mediaRules } = this
+    const {
+      _mixins: mixins,
+      _props: props,
+      _nestedRules: nestedRules,
+      _mediaRules: mediaRules,
+    } = this
+
     if (context) {
       const selector = context.join(',')
       if (props) {
@@ -128,31 +138,13 @@ const proto = Object.freeze({
 
     return mergedRules
   },
-})
+}
 
-export default props =>
-  Object.create(proto, {
-    mixins: {
-      writable: false,
-      configurable: false,
-      value: [],
-    },
-
-    props: {
-      writable: false,
-      configurable: false,
-      value: props,
-    },
-
-    nestedRules: {
-      writable: false,
-      configurable: false,
-      value: [],
-    },
-
-    mediaRules: {
-      writable: false,
-      configurable: false,
-      value: [],
-    },
-  })
+export default props => {
+  const decl = Object.create(proto)
+  decl._props = props
+  decl._mixins = []
+  decl._nestedRules = []
+  decl._mediaRules = []
+  return decl
+}

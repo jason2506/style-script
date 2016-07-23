@@ -2,20 +2,17 @@ import Decl from './decl'
 
 const proto = Object.freeze({
   addRule(selector, decl) {
-    this.root.nest(selector, decl)
+    this._root.nest(selector, decl)
     return this
   },
 
   export() {
-    return this.root.export(null)
+    return this._root.export(null)
   },
 })
 
-export default () =>
-  Object.create(proto, {
-    root: {
-      writable: false,
-      configurable: false,
-      value: Decl(),
-    },
-  })
+export default () => {
+  const styles = Object.create(proto)
+  styles._root = Decl()
+  return styles
+}

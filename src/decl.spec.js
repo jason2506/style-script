@@ -4,13 +4,13 @@ import Decl from './decl'
 
 describe('Decl', () => {
   describe('#_export()', () => {
-    it('should not export Decl without props', () => {
+    it('should handle Decl without props and nested rules', () => {
       const decl = Decl()
       const result = decl._export()
       expect(result).to.eql([{ '': {} }])
     })
 
-    it('should throw error when non-empty Decl is exported without context', () => {
+    it('should throw an error when non-empty Decl is exported without context', () => {
       const decl = Decl({
         fontSize: 16,
         lineHeight: 1.5,
@@ -20,7 +20,7 @@ describe('Decl', () => {
       expect(f).to.throw(Error, /^Decl with props can not be exported without context$/)
     })
 
-    it('should export Decl as list of rules', () => {
+    it('should export Decl as a list of rules', () => {
       const decl = Decl({
         fontSize: 16,
         lineHeight: 1.5,
@@ -44,11 +44,11 @@ describe('Decl', () => {
         boxSizing: 'border-box',
       })
 
-      const result = decl._export(['*', '*:before', '*:after'])
+      const result = decl._export(['*', '*::before', '*::after'])
       expect(result).to.eql([
         {
           '': {
-            '*,*:before,*:after': {
+            '*,*::before,*::after': {
               boxSizing: 'border-box',
             },
           },
@@ -88,20 +88,22 @@ describe('Decl', () => {
     })
 
     it('should detect conflicted rule declared with plain-object', () => {
-      // eslint-disable-next-line no-unused-vars
-      const decl = Decl({}).nest(_ => '.foo', {})
-      const f = () => decl._export(['.foo'])
+      const decl = Decl()
+        .nest('.foo', {})
+        .nest('.foo', {})
+      const f = () => decl._export()
       expect(f).to.throw(Error, /^Rule alread defined: "\.foo"$/)
     })
 
     it('should detect conflicted rule declared with Decl()', () => {
-      // eslint-disable-next-line no-unused-vars
-      const decl = Decl({}).nest(_ => '.foo', Decl({}))
-      const f = () => decl._export(['.foo'])
+      const decl = Decl()
+        .nest('.foo', Decl({}))
+        .nest('.foo', Decl({}))
+      const f = () => decl._export()
       expect(f).to.throw(Error, /^Rule alread defined: "\.foo"$/)
     })
 
-    it('should throw error when Decl with mixin is exported without context', () => {
+    it('should throw an error when Decl with mixin is exported without context', () => {
       const decl = Decl().mixin({})
       const f = () => decl._export()
       expect(f).to.throw(Error, /^Decl with mixins can not be exported without context$/)
@@ -155,7 +157,7 @@ describe('Decl', () => {
       ])
     })
 
-    it('should export mixins in the same order of application', () => {
+    it('should export mixins in the same order of applications', () => {
       const decl = Decl({ fontSize: 16 })
         .mixin({ lineHeight: 1.5 })
         .mixin({ color: 'red' })
@@ -355,6 +357,12 @@ describe('Decl', () => {
   })
 
   describe('#export()', () => {
+    it('should not export Decl without props', () => {
+      const decl = Decl()
+      const result = decl.export()
+      expect(result).to.eql({})
+    })
+
     it('should export object representation of CSS rules', () => {
       const decl = Decl({ color: '#333' })
         .nest(_ => `${_}.active`, { color: '#666' })
@@ -454,6 +462,32 @@ describe('Decl', () => {
         '@media (max-width: 768px)',
         '@media (max-width: 992px)',
         '@media (max-width: 1024px)',
+      ])
+    })
+
+    it('should export media rules after other rules', () => {
+      const decl = Decl()
+        .nest('.foo',
+          Decl({})
+            .nest('.bar',
+              Decl({})
+                .atMedia('screen', {})
+                .atMedia('print', {})
+            )
+            .atMedia('screen', {})
+        )
+        .nest('.baz',
+          Decl({})
+            .atMedia('screen', {})
+        )
+
+      const result = decl.export()
+      expect(Object.keys(result)).to.eql([
+        '.foo',
+        '.foo .bar',
+        '.baz',
+        '@media screen',
+        '@media print',
       ])
     })
   })

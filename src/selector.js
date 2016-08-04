@@ -107,6 +107,7 @@ Object.assign($._, {
   prepend: before => _ => `${before}${_}`,
   append: after => _ => `${_}${after}`,
   surroundWith: (before, after) => _ => `${before}${_}${after}`,
+  compose: (...selectors) => _ => selectors.reduce((_, selector) => selector(_), _),
 
   // logical combinations
   notSelf: _ => $.not(_),

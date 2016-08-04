@@ -1,6 +1,6 @@
 import Decl from './decl'
 
-const proto = Object.freeze({
+const proto = {
   addRule(selector, decl) {
     this._root.nest(selector, decl)
     return this
@@ -9,7 +9,7 @@ const proto = Object.freeze({
   export() {
     return this._root.export(null)
   },
-})
+}
 
 export default () => {
   const styles = Object.create(proto)

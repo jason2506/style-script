@@ -8,8 +8,8 @@
     "watch": "webpack --progress --colors --watch",
     "prepublish": "npm build",
     "lint": "eslint .",
-    "test": "mocha --compilers js:babel-register --colors ./src/**/*.spec.js",
-    "test:watch": "mocha --compilers js:babel-register --colors --watch ./src/**/*.spec.js"
+    "test": "mocha --compilers js:babel-register --colors $(find src -name '*.spec.js')",
+    "test:watch": "mocha --compilers js:babel-register --colors --watch $(find src -name '*.spec.js')"
   },
   "repository": {
     "type": "git",

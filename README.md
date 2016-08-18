@@ -247,7 +247,7 @@ const styles = StyleSheet()
     lineHeight: 1.5,
   })
 
-export styles.export()
+export default styles.export()
 ```
 
 and import this module directly

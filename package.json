@@ -6,6 +6,8 @@
   "scripts": {
     "build": "webpack",
     "watch": "webpack --progress --colors --watch",
+    "clean": "rimraf lib",
+    "prebuild": "npm run clean",
     "prepublish": "npm build",
     "lint": "eslint .",
     "test": "mocha --compilers js:babel-register --colors $(find src -name '*.spec.js')",
@@ -38,6 +40,7 @@
     "eslint": "^3.0.1",
     "eslint-plugin-import": "^1.10.2",
     "mocha": "^2.5.3",
+    "rimraf": "^2.5.4",
     "webpack": "^1.13.1"
   }
 }

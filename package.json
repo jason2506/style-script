@@ -3,6 +3,9 @@
   "version": "0.2.0",
   "description": "Writing JavaScript-powered stylesheets",
   "main": "lib",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "build": "babel ./src -d lib --ignore '*.spec.js'",
     "clean": "rimraf lib",

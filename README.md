@@ -198,7 +198,7 @@ const styles = StyleSheet()
     Decl({
       fontSize: 12,
     })
-      .atMedia(largeScreen', {
+      .atMedia(largeScreen, {
         fontSize: 14,
       })
   )

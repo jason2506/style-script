@@ -182,6 +182,44 @@ console.log(styles.export())
 }
 ```
 
+### Media Object
+
+```javascript
+import { StyleSheet, Decl, Media } from 'style-script'
+
+const largeScreen = Media({
+  modifier: 'only',
+  type: 'screen',
+  features: { minWidth: '800px' }
+})
+
+const styles = StyleSheet()
+  .addRule('html',
+    Decl({
+      fontSize: 12,
+    })
+      .atMedia(largeScreen', {
+        fontSize: 14,
+      })
+  )
+
+console.log(styles.export())
+```
+
+```json
+{
+  "html": {
+    "fontSize": 12
+  },
+
+  "@media only screen and (min-width: 800px)": {
+    "html": {
+      "fontSize": 14
+    }
+  }
+}
+```
+
 
 ## Integration with PostCSS JS
 
@@ -247,7 +285,7 @@ const styles = StyleSheet()
     lineHeight: 1.5,
   })
 
-export styles.export()
+export default styles.export()
 ```
 
 and import this module directly

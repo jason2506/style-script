@@ -34,5 +34,12 @@ describe('$', () => {
       const result = $._.prepend('.foo ')('.bar')
       expect(result).to.equal('.foo .bar')
     })
+
+    describe('#compose', () => {
+      it('should compose selector functions', () => {
+        const result = $._.compose($._.firstChild, $._.before)('.foo')
+        expect(result).to.equal('.foo:first-child::before')
+      })
+    })
   })
 })

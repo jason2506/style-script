@@ -1,5 +1,4 @@
-import StyleSheet from './stylesheet'
-import Decl from './decl'
-import $ from './selector'
-
-export { StyleSheet, Decl, $ }
+export { default as StyleSheet } from './stylesheet'
+export { default as Decl } from './decl'
+export { default as $ } from './selector'
+export { default as Media } from './media'
